@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"app/page.js -> @ffmpeg/ffmpeg\":{\"id\":\"app/page.js -> @ffmpeg/ffmpeg\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_ffmpeg_ffmpeg_dist_esm_index_js.js\"]},\"app/page.js -> @ffmpeg/util\":{\"id\":\"app/page.js -> @ffmpeg/util\",\"files\":[\"static/chunks/_app-pages-browser_node_modules_ffmpeg_util_dist_esm_index_js.js\"]}}"
