@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile } from '@ffmpeg/util';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 
 const VideoMergeComponent = ({ subtitleFile, videoFile, onMergeCompleted }) => {
     const [loaded, setLoaded] = useState(false);
@@ -18,10 +18,8 @@ const VideoMergeComponent = ({ subtitleFile, videoFile, onMergeCompleted }) => {
         // toBlobURL is used to bypass CORS issue, urls with the same
         // domain can be used directly.
         await ffmpeg.load({
-            // coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-            // wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-            coreURL: `${baseURL}/ffmpeg-core.js`,
-            wasmURL: `${baseURL}/ffmpeg-core.wasm`,
+            coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+            wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
         });
         setLoaded(true);
     }
@@ -60,7 +58,6 @@ const VideoMergeComponent = ({ subtitleFile, videoFile, onMergeCompleted }) => {
                 <video ref={videoRef} controls></video><br/>
                 <button onClick={transcode}>Transcode and Add Subtitles</button>
                 <p ref={messageRef}></p>
-                <p>Open Developer Tools (Ctrl+Shift+I) to View Logs</p>
             </>
         )
         : (

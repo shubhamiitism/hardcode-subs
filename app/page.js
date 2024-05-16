@@ -44,7 +44,7 @@ const IndexPage = () => {
                     <MergeBtn onClickMerge={handleClickMerge} />
                     <VideoMergeComponent
                         subtitleFile={'./components/uploads/subs.srt'}
-                        videoFile={'./components/uploads/vid.wav'}
+                        videoFile={'./components/uploads/vid.mp4'}
                         onMergeCompleted={handleMergeCompleted}
                     />
                 </>
