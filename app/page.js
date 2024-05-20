@@ -8,23 +8,44 @@ const IndexPage = () => {
     const [mergeCompleted, setMergeCompleted] = useState(false);
 
     const handleMergeCompleted = () => setMergeCompleted(true);
+    
     const [loaded, setLoaded] = useState(false);
     const videoRef = useRef(null);
     const messageRef = useRef(null);
     const ffmpegRef = useRef(null);
 
-    const handleClickMerge = () => {
-        console.log('Merging Subtitles and video files....');
+    const handleClickMerge = async () => {
+        if (videoFile && subtitleFile) {
+            await transcode(); //new
+            handleMergeCompleted();
+        } else {
+            alert('Please upload both video and subtitle files.');
+        }
+
     };
 
     const handleVideoUpload = (e) => {
         const file = e.target.files[0];
         setVideoFile(file);
+        console.log('vid uploaded..');
+
+        // // Assuming you have a video element in your HTML with an id "myVideo"
+        // const video = document.getElementById('videoFile');
+
+        // // Add an event listener for the 'pause' event
+        // video.addEventListener('pause', () => {
+        //     // Get the current time when the video is paused
+        //     const currentTime = video.currentTime;
+        //     console.log('Video paused at:', currentTime);
+        // });
     };
+
+
 
     const handleSubtitleUpload = (e) => {
         const file = e.target.files[0];
         setSubtitleFile(file);
+        console.log('subs uploaded...');
     };
 
     useEffect(() => {
@@ -48,23 +69,60 @@ const IndexPage = () => {
         loadFFmpeg();
     }, []);
 
+    const parseSRT = (srt) => {
+        const regex = /\[(\d{2}:\d{2}:\d{2}\.\d{3}) --> (\d{2}:\d{2}:\d{2}\.\d{3})\]\s+(.*)/g;
+        let match;
+        const entries = [];
+        
+        while ((match = regex.exec(srt)) !== null) {
+            entries.push({
+                start: match[1],
+                end: match[2],
+                text: match[3].trim()     // Trim to remove any leading/trailing whitespace.
+            });
+        }
+        return entries;
+    };
+
+    const srtTimeToSeconds = (time) => {
+        const [hours, minutes, seconds] = time.split(':');
+        return parseInt(hours, 10) * 3600 + parseInt(minutes, 10) * 60 + parseFloat(seconds);
+    };
+
+
     const transcode = async () => {
         try {
             const videoInput = document.querySelector('#video');
             const subtitleInput = document.querySelector('#subtitle');
+            const subtitles = parseSRT(subtitleInput);
             console.log("Inf", videoInput, subtitleInput);
+            
             const ffmpeg = ffmpegRef.current;
             const { fetchFile } = await import('@ffmpeg/util');
             await ffmpeg.writeFile('vid.mp4', await fetchFile(videoFile));
-            await ffmpeg.writeFile('arial.ttf', await fetchFile('https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf'));
+            await ffmpeg.writeFile('subs.srt', await fetchFile(subtitleFile));
+            
+            //
+            let filter = '';
+            subtitles.forEach(({ start, end, text }, index) => {
+                const startTime = srtTimeToSeconds(start);
+                const endTime = srtTimeToSeconds(end);
+                filter += `drawtext=fontfile=subs.srt:text='${text.replace(/'/g, "\\'")}':x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5:enable='between(t,${startTime},${endTime})',`;
+            });
+            
+            filter = filter.slice(0, -1);
+            //
+
             await ffmpeg.exec([
                 '-i', 'vid.mp4',
-                '-vf', 'drawtext=fontfile=/arial.ttf:text=\'ffmpeg.wasm\':x=10:y=10:fontsize=24:fontcolor=white',
+                //'-vf', 'drawtext=fontfile=/arial.ttf:text=\'ffmpeg.wasm\':x=10:y=10:fontsize=24:fontcolor=white',
+                '-vf', filter,   //new
+                '-c:a', 'copy',    //new
                 'output.mp4',
             ]);
             const data = await ffmpeg.readFile('output.mp4');
             videoRef.current.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-            onMergeCompleted();
+            // onMergeCompleted();
         } catch (error) {
             console.error('Error during FFmpeg command execution:', error);
         }
