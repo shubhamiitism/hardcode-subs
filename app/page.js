@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react';
 import './styles/styles.css';
+import SubtitlesParser from 'subtitles-parser';
 
 const IndexPage = () => {
     const [subtitleFile, setSubtitleFile] = useState(null);
@@ -39,8 +40,6 @@ const IndexPage = () => {
         //     console.log('Video paused at:', currentTime);
         // });
     };
-
-
 
     const handleSubtitleUpload = (e) => {
         const file = e.target.files[0];
@@ -94,24 +93,38 @@ const IndexPage = () => {
         try {
             const videoInput = document.querySelector('#video');
             const subtitleInput = document.querySelector('#subtitle');
-            const subtitles = parseSRT(subtitleInput);
+            const subtitleData = await subtitleFile.text();
             console.log("Inf", videoInput, subtitleInput);
             
+            // const subtitles = parseSRT("[00:00:00.000 --> 00:00:01.000] [music]\n  [00:00:01.000 --> 00:00:06.000]   And Ill learn to get along and throw your back from outer space. \n  [00:00:06.000 --> 00:00:10.000] I just walked in and found you here with that said look upon your face. \n   [00:00:10.000 --> 00:00:12.000]   I should have changed that stupid lock.\n   [00:00:12.000 --> 00:00:14.000]   I should have made you leave your key. \n     [00:00:14.000 --> 00:00:19.000]   If I had no for just one second youd be back to bottom here go on now go. \n  [00:00:19.000 --> 00:00:21.000]   Walk out the door. \n [00:00:21.000 --> 00:00:22.000]   Frank \n [00:00:22.000 --> 00:00:26.000]   Bring your head in this window while I roll it up in there. \n [00:00:26.000 --> 00:00:27.000] Got it. \n [00:00:27.000 --> 00:00:33.000]   [music] \n [00:00:33.000 --> 00:00:34.000]   Frank");
+
             const ffmpeg = ffmpegRef.current;
             const { fetchFile } = await import('@ffmpeg/util');
             await ffmpeg.writeFile('vid.mp4', await fetchFile(videoFile));
-            await ffmpeg.writeFile('subs.srt', await fetchFile(subtitleFile));
+            await ffmpeg.writeFile('arial.ttf', await fetchFile('https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf'));
             
-            //
+            // Parse the SRT file using SubtitlesParser (srtparser)
+            
+            const srtData = await readSubtitleFile(subtitleFile);
+            const subtitles = parseSRT(srtData);
+            console.log('Subtitles:', subtitles);
+
             let filter = '';
-            subtitles.forEach(({ start, end, text }, index) => {
+            console.log("filter1: ", filter);
+
+            subtitles.forEach(({ start, end, text }) => {
                 const startTime = srtTimeToSeconds(start);
                 const endTime = srtTimeToSeconds(end);
-                filter += `drawtext=fontfile=subs.srt:text='${text.replace(/'/g, "\\'")}':x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5:enable='between(t,${startTime},${endTime})',`;
-            });
-            
+                filter+= `drawtext=fontfile=/arial.ttf:text='${text.replace(/'/g, "\\'")}':x=10:y=10:fontsize=24:fontcolor=white:box=1:boxcolor=black@0.5:enable='between(t,${startTime},${endTime})',`;
+                console.log("filter2: ", filter);
+            }); 
+            console.log("filter3: ", filter);
             filter = filter.slice(0, -1);
-            //
+            console.log("filter4: ", filter);
+
+            if (!filter) {
+                throw new Error('No valid subtitle entries found.');
+            }
 
             await ffmpeg.exec([
                 '-i', 'vid.mp4',
@@ -120,12 +133,24 @@ const IndexPage = () => {
                 '-c:a', 'copy',    //new
                 'output.mp4',
             ]);
+
+
+
             const data = await ffmpeg.readFile('output.mp4');
             videoRef.current.src = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
             // onMergeCompleted();
         } catch (error) {
             console.error('Error during FFmpeg command execution:', error);
         }
+    };
+
+    const readSubtitleFile = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target.result);
+            reader.onerror = (error) => reject(error);
+            reader.readAsText(file);
+        });
     };
 
     return (
