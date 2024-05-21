@@ -1,50 +1,90 @@
-
 body {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fa;
     margin: 0;
     padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
+    background-color: #fff;
+    padding: 20px 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
 }
 
 h1 {
     font-size: 24px;
-    margin-top: 20px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.upload-container {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #555;
 }
 
 .upload-btn {
-    margin-right: 10px; /* Adjust margin-right as needed */
-}
-
-.merge-btn {
-    margin-left: 10px; /* Adjust margin-left as needed */
-}
-
-.upload-btn,
-.merge-btn {
-    margin-bottom: 5px;
-}
-
-.merge-btn {
     display: block;
-    width: 150px; /* Adjust width as needed */
-    background-color: white;
-    color: black;
+    margin-top: 5px;
+    font-size: 14px;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.actions {
+    margin-top: 20px;
+}
+
+.merge-btn, .download-link {
+    background-color: #007bff;
+    color: #fff;
     padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    text-align: center; /* Center text horizontally */
-    text-decoration: none; /* Remove underline */
-    font-size: 14px; /* Adjust font size as needed */
-    font-weight: bold; /* Optionally, apply bold font weight */
-    margin-bottom: 10px;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+.merge-btn:hover, .download-link:hover {
+    background-color: #0056b3;
+}
+
+.loader {
+    font-size: 18px;
+    color: #333;
+}
+
+.progress-bar {
+    width: 100%;
+    background-color: #f3f3f3;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.progress {
+    height: 20px;
+    background-color: #4caf50;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    border-radius: 5px;
 }

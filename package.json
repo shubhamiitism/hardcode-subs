@@ -14,9 +14,6 @@
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
-    "srt-parser-2": "^1.2.3",
-    "subtitle": "^4.2.1",
-    "subtitles-parser": "^0.0.2",
     "tailwind": "^4.0.0"
   },
   "devDependencies": {
