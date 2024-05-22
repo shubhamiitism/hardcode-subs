@@ -52,11 +52,9 @@ const IndexPage = () => {
                 wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
             });
             setLoaded(true);
-            console.log("Loaded ffmpeg");
         };
 
         loadFFmpeg();
-        console.log("Load ffmpeg");
     }, [videoDuration]);
 
     const triggerDownload = (url, filename) => {
@@ -72,15 +70,21 @@ const IndexPage = () => {
         setProcessing(true);
         setProgress(0);
         try {
-            const subtitleData = await subtitleFile.text();
+
             const ffmpeg = ffmpegRef.current;
             const { fetchFile } = await import('@ffmpeg/util');
             await ffmpeg.writeFile('vid.mp4', await fetchFile(videoFile));
             await ffmpeg.writeFile('vid.srt', await fetchFile(subtitleFile));
-            await ffmpeg.writeFile('arial.ttf', await fetchFile('https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf'));
+            await ffmpeg.writeFile('tmp/arial.ttf', await fetchFile('https://raw.githubusercontent.com/ffmpegwasm/testdata/master/arial.ttf'));
 
-            await ffmpeg.exec(['-i', 'vid.mp4', '-vf', 'subtitles=vid.srt', 'output.mp4']);
-
+            await ffmpeg.exec([
+            '-i',
+            'vid.mp4',
+            '-vf',
+            `subtitles=vid.srt:fontsdir=/tmp:force_style='Fontname=Arial,fontsize=24,fontcolor=white'`,
+            'output.mp4',
+            ])
+            
             const data = await ffmpeg.readFile('output.mp4');
             const videoURL = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
             setDownloadLink(videoURL);
@@ -99,7 +103,7 @@ const IndexPage = () => {
             <h1>Add Subtitle to Video</h1>
             <div className="upload-container">
                 <label htmlFor="subtitle">Upload SRT File:</label>
-                <input className="upload-btn" type="file" id="subtitle" accept=".srt,.vtt,.ass,.txt" onChange={handleSubtitleUpload} />
+                <input className="upload-btn" type="file" id="subtitle" accept=".srt" onChange={handleSubtitleUpload} />
             </div>
             <div className="upload-container">
                 <label htmlFor="video">Upload Video:</label>
